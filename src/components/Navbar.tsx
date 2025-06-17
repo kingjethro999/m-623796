@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -16,9 +17,11 @@ import {
 
 export default function Navbar() {
   const { t } = useLanguage();
-  const { user, signOut } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+
+  console.log('Navbar rendering - user:', user?.email, 'loading:', loading);
 
   const handleAuthAction = () => {
     if (user) {
@@ -56,7 +59,11 @@ export default function Navbar() {
               <ThemeToggle />
               
               {/* User Authentication */}
-              {user ? (
+              {loading ? (
+                <Button variant="outline" size="sm" disabled>
+                  Loading...
+                </Button>
+              ) : user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="sm" className="flex items-center gap-2">
@@ -100,7 +107,7 @@ export default function Navbar() {
                 <Link to="/amenities" className="nav-link" onClick={() => setIsOpen(false)}>{t.nav.amenities}</Link>
                 <Link to="/gallery" className="nav-link" onClick={() => setIsOpen(false)}>{t.nav.gallery}</Link>
                 <Link to="/contact" className="nav-link" onClick={() => setIsOpen(false)}>{t.nav.contact}</Link>
-                {!user && (
+                {!loading && !user && (
                   <Button onClick={() => { setAuthModalOpen(true); setIsOpen(false); }} size="sm" className="w-fit">
                     Sign In
                   </Button>
