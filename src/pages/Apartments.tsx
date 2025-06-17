@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import ApartmentCard, { ApartmentProps } from "@/components/ApartmentCard";
+import ApartmentCard from "@/components/ApartmentCard";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -13,112 +13,71 @@ import {
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { useLanguage } from "@/contexts/LanguageContext";
-
-// Sample apartments data (will use translations from context)
-const allApartments: ApartmentProps[] = [
-  {
-    id: "1",
-    name: "Deluxe Sea View Suite",
-    description: "Luxurious suite with panoramic sea views, modern amenities, and a private balcony.",
-    price: 180,
-    capacity: 2,
-    size: 45,
-    image: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&h=600&fit=crop",
-    location: "Beachfront",
-    features: ["Wi-Fi", "Kitchen", "Bathroom", "Air Conditioning", "TV", "Balcony"]
-  },
-  {
-    id: "2",
-    name: "Premium Family Apartment",
-    description: "Spacious apartment ideal for families, with full kitchen and stunning coastal views.",
-    price: 250,
-    capacity: 4,
-    size: 75,
-    image: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&h=600&fit=crop",
-    location: "Second row",
-    features: ["Wi-Fi", "Kitchen", "Bathroom", "Air Conditioning", "TV", "Washing Machine"]
-  },
-  {
-    id: "3",
-    name: "Executive Beach Studio",
-    description: "Elegant studio with direct beach access, modern design, and premium finishes.",
-    price: 150,
-    capacity: 2,
-    size: 35,
-    image: "https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=800&h=600&fit=crop",
-    location: "Beachfront",
-    features: ["Wi-Fi", "Kitchenette", "Bathroom", "Air Conditioning", "TV"]
-  },
-  {
-    id: "4",
-    name: "Luxury Penthouse Suite",
-    description: "Exclusive top-floor suite with expansive terrace and panoramic sea views.",
-    price: 350,
-    capacity: 4,
-    size: 90,
-    image: "https://images.unsplash.com/photo-1562438668-bcf0ca6578f0?w=800&h=600&fit=crop",
-    location: "Beachfront",
-    features: ["Wi-Fi", "Full Kitchen", "2 Bathrooms", "Air Conditioning", "TV", "Terrace", "Jacuzzi"]
-  },
-  {
-    id: "5",
-    name: "Classic Double Room",
-    description: "Comfortable hotel room with modern amenities and partial sea views.",
-    price: 120,
-    capacity: 2,
-    size: 28,
-    image: "https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=800&h=600&fit=crop",
-    location: "Hotel building",
-    features: ["Wi-Fi", "Bathroom", "Air Conditioning", "TV", "Mini Fridge"]
-  },
-  {
-    id: "6",
-    name: "Garden View Apartment",
-    description: "Peaceful apartment surrounded by lush gardens, just a short walk from the beach.",
-    price: 160,
-    capacity: 3,
-    size: 55,
-    image: "https://images.unsplash.com/photo-1600585152220-90363fe7e115?w=800&h=600&fit=crop",
-    location: "Garden area",
-    features: ["Wi-Fi", "Kitchen", "Bathroom", "Air Conditioning", "TV", "Terrace"]
-  },
-];
+import { useApartments } from "@/hooks/useApartments";
+import { Loader2 } from "lucide-react";
 
 export default function Apartments() {
   const { t } = useLanguage();
-  const [filteredApartments, setFilteredApartments] = useState<ApartmentProps[]>(allApartments);
+  const { data: apartments = [], isLoading, error } = useApartments();
+  const [filteredApartments, setFilteredApartments] = useState(apartments);
   const [capacityFilter, setCapacityFilter] = useState<string>("all");
   const [locationFilter, setLocationFilter] = useState<string>("all");
-  const [priceRange, setPriceRange] = useState<number[]>([100, 350]);
+  const [priceRange, setPriceRange] = useState<number[]>([50, 500]);
   
   useEffect(() => {
-    // Scroll to top when component mounts
     window.scrollTo(0, 0);
   }, []);
   
+  // Update filtered apartments when data changes
+  useEffect(() => {
+    setFilteredApartments(apartments);
+  }, [apartments]);
+  
   // Apply filters
   useEffect(() => {
-    let result = allApartments;
+    let result = apartments;
     
     // Filter by capacity
     if (capacityFilter !== "all") {
       const capacity = parseInt(capacityFilter);
-      result = result.filter(apt => apt.capacity >= capacity);
-    }
-    
-    // Filter by location
-    if (locationFilter !== "all") {
-      result = result.filter(apt => apt.location === locationFilter);
+      result = result.filter(apt => apt.max_guests >= capacity);
     }
     
     // Filter by price range
-    result = result.filter(apt => apt.price >= priceRange[0] && apt.price <= priceRange[1]);
+    result = result.filter(apt => apt.price_per_night >= priceRange[0] && apt.price_per_night <= priceRange[1]);
     
     setFilteredApartments(result);
-  }, [capacityFilter, locationFilter, priceRange]);
+  }, [capacityFilter, priceRange, apartments]);
   
-  // Get unique locations for filter
-  const locations = ["all", ...new Set(allApartments.map(apt => apt.location))];
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <main className="flex-1 pt-20 flex items-center justify-center">
+          <div className="flex items-center gap-2">
+            <Loader2 className="h-6 w-6 animate-spin" />
+            <span>Loading apartments...</span>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <main className="flex-1 pt-20 flex items-center justify-center">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold mb-2">Error Loading Apartments</h2>
+            <p className="text-muted-foreground">Please try again later.</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
   
   return (
     <div className="min-h-screen flex flex-col">
@@ -148,7 +107,7 @@ export default function Apartments() {
         {/* Filter Section */}
         <section className="py-8 border-b">
           <div className="container">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
               {/* Capacity Filter */}
               <div>
                 <label className="block text-sm font-medium mb-2">
@@ -168,33 +127,15 @@ export default function Apartments() {
                 </Select>
               </div>
               
-              {/* Location Filter */}
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  {t.apartments.filters.location}
-                </label>
-                <Select value={locationFilter} onValueChange={setLocationFilter}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder={t.apartments.filters.location} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t.apartments.filters.allLocations}</SelectItem>
-                    {locations.filter(loc => loc !== "all").map(location => (
-                      <SelectItem key={location} value={location}>{location}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
               {/* Price Range Filter */}
               <div>
                 <label className="block text-sm font-medium mb-2">
                   {t.apartments.filters.priceRange}: ${priceRange[0]} - ${priceRange[1]}
                 </label>
                 <Slider
-                  defaultValue={[100, 350]}
-                  min={100}
-                  max={350}
+                  defaultValue={[50, 500]}
+                  min={50}
+                  max={500}
                   step={10}
                   value={priceRange}
                   onValueChange={setPriceRange}
@@ -205,14 +146,13 @@ export default function Apartments() {
             
             <div className="flex justify-between items-center mt-6 animate-fade-in [animation-delay:200ms]">
               <p className="text-muted-foreground">
-                {t.apartments.filters.showing} {filteredApartments.length} {t.apartments.filters.of} {allApartments.length} {t.apartments.filters.accommodations}
+                {t.apartments.filters.showing} {filteredApartments.length} {t.apartments.filters.of} {apartments.length} {t.apartments.filters.accommodations}
               </p>
               <Button 
                 variant="outline" 
                 onClick={() => {
                   setCapacityFilter("all");
-                  setLocationFilter("all");
-                  setPriceRange([100, 350]);
+                  setPriceRange([50, 500]);
                 }}
               >
                 {t.apartments.filters.resetFilters}
@@ -228,7 +168,17 @@ export default function Apartments() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {filteredApartments.map((apartment, index) => (
                   <div key={apartment.id} className="animate-fade-in" style={{ animationDelay: `${(index + 1) * 100}ms` }}>
-                    <ApartmentCard apartment={apartment} />
+                    <ApartmentCard apartment={{
+                      id: apartment.id,
+                      name: apartment.name,
+                      description: apartment.description || '',
+                      price: apartment.price_per_night,
+                      capacity: apartment.max_guests,
+                      size: 35, // Default size since it's not in the database
+                      image: apartment.images?.[0] || 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&h=600&fit=crop',
+                      location: 'Beachfront', // Default location
+                      features: apartment.amenities || []
+                    }} />
                   </div>
                 ))}
               </div>
@@ -240,8 +190,7 @@ export default function Apartments() {
                   variant="outline" 
                   onClick={() => {
                     setCapacityFilter("all");
-                    setLocationFilter("all");
-                    setPriceRange([100, 350]);
+                    setPriceRange([50, 500]);
                   }}
                 >
                   {t.apartments.filters.resetFilters}

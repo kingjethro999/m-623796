@@ -9,7 +9,128 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      apartments: {
+        Row: {
+          amenities: string[] | null
+          bathrooms: number
+          bedrooms: number
+          created_at: string | null
+          description: string | null
+          id: string
+          images: string[] | null
+          is_available: boolean | null
+          max_guests: number
+          name: string
+          price_per_night: number
+          updated_at: string | null
+        }
+        Insert: {
+          amenities?: string[] | null
+          bathrooms?: number
+          bedrooms?: number
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          images?: string[] | null
+          is_available?: boolean | null
+          max_guests?: number
+          name: string
+          price_per_night: number
+          updated_at?: string | null
+        }
+        Update: {
+          amenities?: string[] | null
+          bathrooms?: number
+          bedrooms?: number
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          images?: string[] | null
+          is_available?: boolean | null
+          max_guests?: number
+          name?: string
+          price_per_night?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      bookings: {
+        Row: {
+          apartment_id: string
+          check_in: string
+          check_out: string
+          created_at: string | null
+          guests: number
+          id: string
+          special_requests: string | null
+          status: string | null
+          total_price: number
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          apartment_id: string
+          check_in: string
+          check_out: string
+          created_at?: string | null
+          guests?: number
+          id?: string
+          special_requests?: string | null
+          status?: string | null
+          total_price: number
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          apartment_id?: string
+          check_in?: string
+          check_out?: string
+          created_at?: string | null
+          guests?: number
+          id?: string
+          special_requests?: string | null
+          status?: string | null
+          total_price?: number
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_apartment_id_fkey"
+            columns: ["apartment_id"]
+            isOneToOne: false
+            referencedRelation: "apartments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          first_name: string | null
+          id: string
+          last_name: string | null
+          phone: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          first_name?: string | null
+          id: string
+          last_name?: string | null
+          phone?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          phone?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
