@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Star, Users, Home } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -44,7 +45,7 @@ export default function ApartmentCard({ apartment }: { apartment: ApartmentProps
           />
           <div className="absolute top-4 right-4">
             <span className="bg-white/90 dark:bg-background/90 px-3 py-1 rounded-full text-sm font-medium backdrop-blur-sm">
-              €{apartment.price}/{t.apartmentCard.night}
+              €{apartment.price}/{t.booking.summary.night}
             </span>
           </div>
         </div>
@@ -68,7 +69,7 @@ export default function ApartmentCard({ apartment }: { apartment: ApartmentProps
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-1">
                 <Users className="h-4 w-4" />
-                <span>{apartment.capacity} {t.apartmentCard.guests}</span>
+                <span>{apartment.capacity} {t.booking.summary.guests}</span>
               </div>
               <div className="flex items-center space-x-1">
                 <Home className="h-4 w-4" />
@@ -92,7 +93,7 @@ export default function ApartmentCard({ apartment }: { apartment: ApartmentProps
               ))}
               {apartment.features.length > 3 && (
                 <span className="text-xs text-muted-foreground">
-                  +{apartment.features.length - 3} {t.apartmentCard.more}
+                  +{apartment.features.length - 3} {t.apartments.filters.more}
                 </span>
               )}
             </div>
@@ -100,10 +101,10 @@ export default function ApartmentCard({ apartment }: { apartment: ApartmentProps
           
           <div className="flex items-center justify-between">
             <button className="text-primary hover:text-primary/80 font-medium transition-colors">
-              {t.apartmentCard.viewDetails}
+              {t.apartments.filters.viewDetails}
             </button>
             <Button onClick={handleBookNow} className="btn-primary">
-              {t.apartmentCard.bookNow}
+              {t.nav.bookNow}
             </Button>
           </div>
         </div>
