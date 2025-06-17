@@ -1,9 +1,7 @@
-
-import { useState } from "react";
+import React from "react";
+import { Star, Users, Home } from "lucide-react";
 import { Link } from "react-router-dom";
-import { Users, Maximize, MapPin, Bath, Coffee, Wifi } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 export interface ApartmentProps {
@@ -17,89 +15,101 @@ export interface ApartmentProps {
   location: string;
   features: string[];
 }
+import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { AuthModal } from "@/components/AuthModal";
 
 export default function ApartmentCard({ apartment }: { apartment: ApartmentProps }) {
-  const { t, language } = useLanguage();
-  const [isHovered, setIsHovered] = useState(false);
-  
-  // Use translated name and description if available
-  const translatedName = language !== 'en' && t.apartmentDescriptions[apartment.id]?.name 
-    ? t.apartmentDescriptions[apartment.id].name 
-    : apartment.name;
-    
-  const translatedDescription = language !== 'en' && t.apartmentDescriptions[apartment.id]?.description 
-    ? t.apartmentDescriptions[apartment.id].description 
-    : apartment.description;
-  
+  const { t } = useLanguage();
+  const { user } = useAuth();
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+
+  const handleBookNow = () => {
+    if (!user) {
+      setAuthModalOpen(true);
+    } else {
+      // Redirect to booking page with apartment data
+      window.location.href = `/booking?apartment=${apartment.id}`;
+    }
+  };
+
   return (
-    <div 
-      className="rounded-xl overflow-hidden shadow-lg transition-all duration-500 hover:shadow-xl bg-card group"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      <div className="relative overflow-hidden h-64">
-        <img 
-          src={apartment.image} 
-          alt={translatedName}
-          className={cn(
-            "w-full h-full object-cover transition-transform duration-700",
-            isHovered ? "scale-110" : "scale-100"
+    <>
+      <div className="glass-card overflow-hidden group hover:shadow-xl transition-all duration-300 animate-fade-in">
+        <div className="relative overflow-hidden">
+          <img
+            src={apartment.image}
+            alt={apartment.name}
+            className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+          <div className="absolute top-4 right-4">
+            <span className="bg-white/90 dark:bg-background/90 px-3 py-1 rounded-full text-sm font-medium backdrop-blur-sm">
+              €{apartment.price}/{t.apartmentCard.night}
+            </span>
+          </div>
+        </div>
+        
+        <div className="p-6">
+          <div className="flex items-start justify-between mb-3">
+            <h3 className="text-xl font-semibold group-hover:text-primary transition-colors">
+              {apartment.name}
+            </h3>
+            <div className="flex items-center space-x-1 text-amber-500">
+              <Star className="h-4 w-4 fill-current" />
+              <span className="text-sm font-medium">4.8</span>
+            </div>
+          </div>
+          
+          <p className="text-muted-foreground mb-4 line-clamp-2">
+            {apartment.description}
+          </p>
+          
+          <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-1">
+                <Users className="h-4 w-4" />
+                <span>{apartment.capacity} {t.apartmentCard.guests}</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <Home className="h-4 w-4" />
+                <span>{apartment.size}m²</span>
+              </div>
+            </div>
+            <div className="text-xs bg-muted px-2 py-1 rounded">
+              {apartment.location}
+            </div>
+          </div>
+          
+          {apartment.features && (
+            <div className="flex flex-wrap gap-2 mb-4">
+              {apartment.features.slice(0, 3).map((feature, index) => (
+                <span
+                  key={index}
+                  className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full"
+                >
+                  {feature}
+                </span>
+              ))}
+              {apartment.features.length > 3 && (
+                <span className="text-xs text-muted-foreground">
+                  +{apartment.features.length - 3} {t.apartmentCard.more}
+                </span>
+              )}
+            </div>
           )}
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/60 flex items-end p-6">
-          <div>
-            <h3 className="text-white text-xl font-bold mb-1">{translatedName}</h3>
-            <div className="flex items-center text-white/80 text-sm mb-2">
-              <MapPin className="h-4 w-4 mr-1" />
-              <span>{apartment.location}</span>
-            </div>
-            <div className="flex items-center space-x-3 text-white">
-              <div className="flex items-center">
-                <Users className="h-4 w-4 mr-1" />
-                <span>{apartment.capacity} {apartment.capacity === 1 ? 
-                  t.apartments.filters.guests : t.apartments.filters.guests}</span>
-              </div>
-              <div className="flex items-center">
-                <Maximize className="h-4 w-4 mr-1" />
-                <span>{apartment.size} m²</span>
-              </div>
-            </div>
+          
+          <div className="flex items-center justify-between">
+            <button className="text-primary hover:text-primary/80 font-medium transition-colors">
+              {t.apartmentCard.viewDetails}
+            </button>
+            <Button onClick={handleBookNow} className="btn-primary">
+              {t.apartmentCard.bookNow}
+            </Button>
           </div>
         </div>
       </div>
-      
-      <div className="p-6 space-y-4">
-        <p className="text-muted-foreground line-clamp-2">{translatedDescription}</p>
-        
-        <div className="flex flex-wrap gap-2">
-          {apartment.features.slice(0, 3).map((feature, index) => (
-            <div 
-              key={index} 
-              className="flex items-center text-sm text-muted-foreground bg-muted px-3 py-1 rounded-full"
-            >
-              {feature === "Bathroom" && <Bath className="h-3.5 w-3.5 mr-1" />}
-              {feature === "Kitchen" && <Coffee className="h-3.5 w-3.5 mr-1" />}
-              {feature === "Wi-Fi" && <Wifi className="h-3.5 w-3.5 mr-1" />}
-              <span>{feature}</span>
-            </div>
-          ))}
-          {apartment.features.length > 3 && (
-            <div className="text-sm text-muted-foreground bg-muted px-3 py-1 rounded-full">
-              +{apartment.features.length - 3} {t.apartments.filters.more}
-            </div>
-          )}
-        </div>
-        
-        <div className="flex items-end justify-between pt-2">
-          <div>
-            <span className="text-xl font-bold">${apartment.price}</span>
-            <span className="text-muted-foreground text-sm"> / {t.booking.summary.night}</span>
-          </div>
-          <Button asChild className="btn-primary">
-            <Link to={`/apartments/${apartment.id}`}>{t.apartments.filters.viewDetails}</Link>
-          </Button>
-        </div>
-      </div>
-    </div>
+
+      <AuthModal open={authModalOpen} onOpenChange={setAuthModalOpen} />
+    </>
   );
 }
